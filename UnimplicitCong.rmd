@@ -1,0 +1,358 @@
+---
+title: "Unimplicit2022"
+author: "Yan Cong"
+date: "5/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(lattice)
+library(plyr)
+library(dplyr)
+library(stringr)
+library(forcats)
+library(ggplot2)
+theme_update(text = element_text(size=11),
+             axis.text.x = element_text(angle=90, hjust=1))
+library(sciplot)
+library(tidyr)
+
+library(hrbrthemes)
+library(viridis)
+
+library(reshape2)
+
+library(gridExtra)
+library(grid)
+
+library(Hmisc)
+library(hrbrthemes)
+library(lattice)
+library(plyr)
+library(dplyr)
+library(stringr)
+library(forcats)
+library(ggplot2)
+theme_update(text = element_text(size=11),
+             axis.text.x = element_text(angle=90, hjust=1))
+library(sciplot)
+library(tidyr)
+#library(hrbrthemes)
+library(viridis)
+library(reshape2)
+library(gridExtra)
+library(grid)
+library(corrplot)
+library(ggpubr)
+#need to install lm.beta first
+#library(lm.beta)
+
+col.qual <- c("#FBB4AE","#B3CDE3","#CCEBC5","#DECBE4","#FED9A6","#FFFFCC","#E5D8BD")
+col.grey <- c("#DFDFDF","#BFBFBF","#9F9F9F","#808080","#606060","#404040","#202020")
+
+# Modify the Trellis parameters
+trellis.par.set(superpose.polygon = list(col = col.qual, border = "black"))
+trellis.par.set(strip.background = list(col = col.grey))
+trellis.par.set(add.text = list(cex = 0.8, col="black"))
+trellis.par.set(par.xlab.text = list(cex = 0.8, col="grey20"))
+
+```
+
+```{r read in data}
+data_in = read.csv("rett_lm_adj_cos_stats.csv", header = TRUE) 
+```
+
+```{r summary}
+summary(data_in)
+```
+
+
+```{r relative dataset}
+data_relative = data_in[ which(data_in$adj_class == 'relative'), ]
+summary(data_relative)
+```
+
+
+```{r absolute dataset}
+data_absolute = data_in[ which(data_in$adj_class == 'absolute'), ]
+summary(data_absolute)
+```
+
+
+```{r boxplot mean data_relative adjective polarity}
+rett_adj_polarity <- data_relative[
+                        c("construction", 'adj_class',
+       'polarity', 'cos_rett_macaw', 'cos_prag_macaw', 'cos_sem_macaw',
+       'cos_rett_gpt', 'cos_prag_gpt', 'cos_sem_gpt')]
+
+rett_adj_polarity[,4:9] <- scale(rett_adj_polarity[,4:9]) #only scale the numeric columns
+
+data_long <- gather(rett_adj_polarity, model_metrics, measurement, 
+                    cos_rett_macaw:cos_sem_gpt, factor_key=TRUE)
+
+
+relative_polarity = ggplot(data = data_long, aes(x=model_metrics, y=measurement, 
+                                        fill=polarity)) +
+    geom_boxplot() +
+   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A", limits = c("positive", "negative"),
+    labels = c("positive", "negative")) +
+      stat_compare_means(aes(label = sprintf("p = %5.2f",  as.numeric(..p.format..))), method = "t.test", size = 3) +
+    ylab("Relative ADJ Similarity MEAN") +
+    scale_x_discrete(labels=c("MacawDetective", "MacawChill", "MacawNerdy", 
+                              "GPTDetective", "GPTChill", "GPTNerdy")) +
+  ylim(-2.5,3)+
+  theme_bw() + # black white theme
+    theme(# Hide panel borders and remove grid lines
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  legend.text = element_text(size=10),
+  legend.title = element_text(size=12),
+
+      axis.title.x=element_blank(),
+        axis.text.x=element_text(face="bold", color="#993333", 
+                           size=9, angle=15),
+        axis.title.y = element_text(color = "grey20", size = 8) )
+
+relative_polarity
+
+```
+
+
+
+```{r boxplot mean data_absolute adjective polarity}
+rett_adj_polarity <- data_absolute[
+                        c("construction", 'adj_class',
+       'polarity', 'cos_rett_macaw', 'cos_prag_macaw', 'cos_sem_macaw',
+       'cos_rett_gpt', 'cos_prag_gpt', 'cos_sem_gpt')]
+
+rett_adj_polarity[,4:9] <- scale(rett_adj_polarity[,4:9])
+
+data_long <- gather(rett_adj_polarity, model_metrics, measurement, 
+                    cos_rett_macaw:cos_sem_gpt, factor_key=TRUE)
+
+
+absolute_polarity = ggplot(data = data_long, aes(x=model_metrics, y=measurement, 
+                                        fill=polarity)) +
+    geom_boxplot() +
+   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A", limits = c("positive", "negative"),
+    labels = c("positive", "negative")) +
+      stat_compare_means(aes(label = sprintf("p = %5.2f",  as.numeric(..p.format..))), method = "t.test", size = 3) +
+    ylab("Absolute ADJ Similarity MEAN") +
+    scale_x_discrete(labels=c("MacawDetective", "MacawChill", "MacawNerdy", 
+                              "GPTDetective", "GPTChill", "GPTNerdy")) +
+  ylim(-2.5,3)+
+  theme_bw() + # black white theme
+    theme(# Hide panel borders and remove grid lines
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  legend.text = element_text(size=10),
+  legend.title = element_text(size=12),
+
+      axis.title.x=element_blank(),
+        axis.text.x=element_text(face="bold", color="#993333", 
+                           size=9, angle=15),
+        axis.title.y = element_text(color = "grey20", size = 8) )
+
+absolute_polarity
+
+```
+
+
+
+```{r boxplot put together 2 polarity boxplots}
+ggarrange(relative_polarity,
+          absolute_polarity,
+          ncol=2, nrow=1,
+                common.legend = TRUE, legend="bottom")
+ggsave('polarity_unimplicit.png', dpi = 300)
+```
+
+
+
+```{r boxplot mean data_in constructions}
+rett_adj_polarity <- data_in[
+                        c("construction", 'adj_class',
+       'polarity', 'cos_rett_macaw', 'cos_prag_macaw', 'cos_sem_macaw',
+       'cos_rett_gpt', 'cos_prag_gpt', 'cos_sem_gpt')]
+
+rett_adj_polarity[,4:9] <- scale(rett_adj_polarity[,4:9])
+
+data_long <- gather(rett_adj_polarity, model_metrics, measurement, 
+                    cos_rett_macaw:cos_sem_gpt, factor_key=TRUE)
+
+
+meanplot = ggplot(data = data_long, aes(x=model_metrics, y=measurement, 
+                                        fill=construction)) +
+    geom_boxplot() +
+   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A", limits = c("positive", "equative", "comparative"),
+    labels = c("positive", "equative", "comparative")) +
+      stat_compare_means(
+                    label.y=3,
+                    label = "p.signif") +
+    ylab("ADJ Similarity MEAN") + #: how evaluative LMs think these adjectives are
+    scale_x_discrete(labels=c("Macaw - Detective", "Macaw - Chill", "Macaw - Nerdy", 
+                              "GPT - Detective", "GPT - Chill", "GPT - Nerdy")) +
+  ylim(-2.5,3)+
+  theme_bw() + # black white theme
+    theme(# Hide panel borders and remove grid lines
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  legend.text = element_text(size=10),
+  legend.title = element_text(size=12),
+
+      axis.title.x=element_blank(),
+        axis.text.x=element_text(face="bold", color="#993333", 
+                           size=9, angle=15),
+        axis.title.y = element_text(color = "grey20", size = 8) )
+
+ggsave('construction_unimplicit.png', dpi = 300)
+meanplot
+
+```
+
+
+```{r boxplot mean data_pos adjective class positive}
+data_pos = data_in[ which(data_in$construction == 'positive'), ]
+
+rett_adj_polarity <- data_pos[
+                        c("construction", 'adj_class',
+       'polarity', 'cos_rett_macaw', 'cos_prag_macaw', 'cos_sem_macaw',
+       'cos_rett_gpt', 'cos_prag_gpt', 'cos_sem_gpt')]
+
+rett_adj_polarity[,4:9] <- scale(rett_adj_polarity[,4:9]) #only scale the numeric columns
+
+data_long <- gather(rett_adj_polarity, model_metrics, measurement, 
+                    cos_rett_macaw:cos_sem_gpt, factor_key=TRUE)
+
+
+adjClass_pos = ggplot(data = data_long, aes(x=model_metrics, y=measurement, 
+                                        fill=adj_class)) +
+    geom_boxplot() +
+   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A", limits = c("relative", "absolute"),
+    labels = c("relative", "absolute")) +
+       stat_compare_means(
+                    label.y=3,
+                    label = "p.signif") +
+    ylab("ADJ in POS Similarity MEAN") +
+    scale_x_discrete(labels=c("MacawDetective", "MacawChill", "MacawNerdy", 
+                              "GPTDetective", "GPTChill", "GPTNerdy")) +
+  ylim(-2.5,3)+
+  theme_bw() + # black white theme
+    theme(# Hide panel borders and remove grid lines
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  legend.text = element_text(size=10),
+  legend.title = element_text(size=12),
+
+      axis.title.x=element_blank(),
+        axis.text.x=element_text(face="bold", color="#993333", 
+                           size=7, angle=90),
+        axis.title.y = element_text(color = "grey20", size = 8) )
+
+adjClass_pos
+```
+
+
+
+```{r boxplot mean data_pos adjective class equative}
+data_eq = data_in[ which(data_in$construction == 'equative'), ]
+
+rett_adj_polarity <- data_eq[
+                        c("construction", 'adj_class',
+       'polarity', 'cos_rett_macaw', 'cos_prag_macaw', 'cos_sem_macaw',
+       'cos_rett_gpt', 'cos_prag_gpt', 'cos_sem_gpt')]
+
+rett_adj_polarity[,4:9] <- scale(rett_adj_polarity[,4:9]) #only scale the numeric columns
+
+data_long <- gather(rett_adj_polarity, model_metrics, measurement, 
+                    cos_rett_macaw:cos_sem_gpt, factor_key=TRUE)
+
+
+adjClass_eq = ggplot(data = data_long, aes(x=model_metrics, y=measurement, 
+                                        fill=adj_class)) +
+    geom_boxplot() +
+   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A", limits = c("relative", "absolute"),
+    labels = c("relative", "absolute")) +
+       stat_compare_means(
+                    label.y=3,
+                    label = "p.signif") +
+    ylab("ADJ in EQ Similarity MEAN") +
+    scale_x_discrete(labels=c("MacawDetective", "MacawChill", "MacawNerdy", 
+                              "GPTDetective", "GPTChill", "GPTNerdy")) +
+  ylim(-2.5,3)+
+  theme_bw() + # black white theme
+    theme(# Hide panel borders and remove grid lines
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  legend.text = element_text(size=10),
+  legend.title = element_text(size=12),
+
+      axis.title.x=element_blank(),
+        axis.text.x=element_text(face="bold", color="#993333", 
+                           size=7, angle=90),
+        axis.title.y = element_text(color = "grey20", size = 8) )
+
+adjClass_eq
+```
+
+
+
+```{r boxplot mean data_pos adjective class comparative}
+data_comp = data_in[ which(data_in$construction == 'comparative'), ]
+
+rett_adj_polarity <- data_comp[
+                        c("construction", 'adj_class',
+       'polarity', 'cos_rett_macaw', 'cos_prag_macaw', 'cos_sem_macaw',
+       'cos_rett_gpt', 'cos_prag_gpt', 'cos_sem_gpt')]
+
+rett_adj_polarity[,4:9] <- scale(rett_adj_polarity[,4:9]) #only scale the numeric columns
+
+data_long <- gather(rett_adj_polarity, model_metrics, measurement, 
+                    cos_rett_macaw:cos_sem_gpt, factor_key=TRUE)
+
+
+adjClass_comp = ggplot(data = data_long, aes(x=model_metrics, y=measurement, 
+                                        fill=adj_class)) +
+    geom_boxplot() +
+   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A", limits = c("relative", "absolute"),
+    labels = c("relative", "absolute")) +
+      stat_compare_means(
+                    label.y=3,
+                    label = "p.signif") +
+    ylab("ADJ in COMP Similarity MEAN") +
+    scale_x_discrete(labels=c("MacawDetective", "MacawChill", "MacawNerdy", 
+                              "GPTDetective", "GPTChill", "GPTNerdy")) +
+  ylim(-2.5,3)+
+  theme_bw() + # black white theme
+    theme(# Hide panel borders and remove grid lines
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  legend.text = element_text(size=10),
+  legend.title = element_text(size=12),
+
+      axis.title.x=element_blank(),
+        axis.text.x=element_text(face="bold", color="#993333", 
+                           size=7, angle=90),
+        axis.title.y = element_text(color = "grey20", size = 8) )
+
+adjClass_comp
+```
+
+
+
+```{r boxplot put together 3 adj_calss boxplots}
+ggarrange(adjClass_pos,
+          adjClass_eq,
+          adjClass_comp,
+          ncol=3, nrow=1,
+                common.legend = TRUE, legend="bottom")
+ggsave('adj_class_unimplicit.png', dpi = 300)
+```
+
+
