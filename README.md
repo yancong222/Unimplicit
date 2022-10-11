@@ -5,7 +5,7 @@ Python scripts and R code for the paper '_Pre-trained Language Models' Interpret
 ## Citation
 ```tex
 @inproceedings{cong-2022-pre,
-    title = "Pre-trained Language Models' Interpretation of Evaluativity Implicature: Evidence from Gradable Adjectives Usage in Context",
+    title = "Pre-trained Language Models{'} Interpretation of Evaluativity Implicature: Evidence from Gradable Adjectives Usage in Context",
     author = "Cong, Yan",
     booktitle = "Proceedings of the Second Workshop on Understanding Implicit and Underspecified Language",
     month = jul,
